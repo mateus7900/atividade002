@@ -1,0 +1,113 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Estado {
+  id                Int                     @id @default(autoincrement())
+  nome              String
+  sigla             String
+  created_at        DateTime                @default(now())
+  updated_at        DateTime                @updatedAt
+  cidades           Cidade[]
+}
+
+model Cidade {
+  id                Int                     @id @default(autoincrement())
+  nome              String
+  estado_id         Int
+  created_at        DateTime                @default(now())
+  updated_at        DateTime                @updatedAt
+  estado            Estado                  @relation(fields: [estado_id], references: [id])
+  pessoas           Pessoa[]
+  locais_coletas    Local_Coleta[]
+  unidades          Unidade[]
+}
+
+model Tipo_Sanguineo {
+  id                Int                     @id @default(autoincrement())
+  tipo              String
+  fator             String
+  created_at        DateTime                @default(now())
+  updated_at        DateTime                @updatedAt
+  pessoas           Pessoa[]
+}
+
+model Local_Coleta {
+  id                Int                     @id @default(autoincrement())
+  nome              String
+  rua               String
+  numero            String
+  complemento       String
+  cidade_id         Int
+  created_at        DateTime                @default(now())
+  updated_at        DateTime                @updatedAt
+  cidade            Cidade                  @relation(fields: [cidade_id], references: [id])
+  doacoes           Doacao[]
+}
+
+model Doacao {
+  id                Int                     @id @default(autoincrement())
+  pessoa_id         Int
+  local_id          Int
+  data              DateTime
+  created_at        DateTime                @default(now())
+  updated_at        DateTime                @updatedAt
+  pessoa            Pessoa                  @relation(fields: [pessoa_id], references: [id])
+  local             Local_Coleta            @relation(fields: [local_id], references: [id])
+  produtos          Produto[]
+}
+
+model Produto {
+  id                Int                     @id @default(autoincrement())
+  etiqueta          String
+  doacao_id         Int
+  validade          DateTime
+  created_at        DateTime                @default(now())
+  updated_at        DateTime                @updatedAt                
+  doacao            Doacao                  @relation(fields: [doacao_id], references: [id])
+  distribuicoes     Distribuicao[]
+}
+
+model Unidade {
+  id                Int                     @id @default(autoincrement())
+  nome              String
+  numero            String
+  complemento       String
+  cidade_id         Int
+  created_at        DateTime                @default(now())
+  updated_at        DateTime                @updatedAt
+  cidade            Cidade                  @relation(fields: [cidade_id], references: [id])
+  distribuicoes     Distribuicao[]
+}
+
+model Distribuicao {
+  id                Int                     @id @default(autoincrement())
+  produto_id        Int
+  unidade_id        Int
+  data              DateTime
+  created_at        DateTime                @default(now())
+  updated_at        DateTime                @updatedAt
+  produto           Produto                 @relation(fields: [produto_id], references: [id])
+  unidade           Unidade                 @relation(fields: [unidade_id], references: [id])
+}
+
+model Pessoa {
+  id                Int                     @id @default(autoincrement())
+  nome              String
+  rua               String
+  numero            Int
+  complemento       String
+  documento         String                  @unique
+  cidade_id         Int                
+  tipo_id           Int
+  created_at        DateTime                @default(now())
+  updated_at        DateTime                @updatedAt 
+  cidade            Cidade                  @relation(fields: [cidade_id], references: [id])
+  tipo           Tipo_Sanguineo          @relation(fields: [tipo_id], references: [id])
+  doacoes           Doacao[]
+}
